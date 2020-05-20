@@ -42,4 +42,4 @@ MIT
 Customizations / Support
 --------------
 We do offer paid support & customizations.
-Const us at https://orbisius.com/contact for more info.
+Contact us at https://orbisius.com/contact for more info.
