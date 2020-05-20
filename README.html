@@ -1,0 +1,40 @@
+<h1 id="orbisiusdotenv">orbisius-dot-env</h1>
+
+<p>Orbisius Dot Env is a free php class that allows you to read .env project files.
+It is just one file and doesn't have any dependencies.</p>
+
+<p>If the file is not passed the class will try to look for .env starting from Document Root, then checking if WordPress' const ABSPATH is defined and try one level up.</p>
+
+<p>The class is very efficient and doesn't currently use regular expressions at all.
+When it parses the key names are automatically uppercases them.
+It can define the values in environment, $<em>ENV, $</em>SERVER etc. and also define php constants if they haven't been defined just yet.</p>
+
+<p>This class was created by <a href='https://orbisius.com/?utm_source=orbisius-dot-env' title='WordPress Plugin Development, SaaS App Development'>https://orbisius.com</a></p>
+
+<h2 id="usagenotes">Usage Notes</h2>
+
+<p>Check the example.php file.</p>
+
+<pre><code class="php language-php">$dot_env = Orbisius_Dot_Env::getInstance();
+$data = $dot_env-&gt;read();
+$dot_env-&gt;updateEnv($data);
+$dot_env-&gt;defineConsts($data);
+</code></pre>
+
+<h3 id="envexample">.env Example</h3>
+
+<p>You can comment your <code>.env</code> file using the <code>#</code> character. E.g.</p>
+
+<pre><code class="shell language-shell"># This is a comment
+VAR1="value" # comment
+VAR2=value # comment
+</code></pre>
+
+<h2 id="license">License</h2>
+
+<p>MIT</p>
+
+<h2 id="customizationssupport">Customizations / Support</h2>
+
+<p>We do offer paid support &amp; customizations.
+Const us at <a href='https://orbisius.com/contact?utm_source=orbisius-dot-env'>https://orbisius.com/contact</a> for more info.</p>
