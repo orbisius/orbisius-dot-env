@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__ . '/orbisius_dot_env.php');
+
 $dot_env = Orbisius_Dot_Env::getInstance();
 
 // make the class look for the file.
