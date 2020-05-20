@@ -27,9 +27,21 @@ $dot_env->defineConsts($data);
 You can comment your `.env` file using the `#` character. E.g.
 
 ```shell
-# This is a comment
-VAR1="value" # comment
-VAR2=value # comment
+# You can have comments
+ENV=dev
+db_name = orbisius_db
+db_user = orbisius_user
+db_pass = orbisius_pass # you can have a comment here too
+
+# Leave some lines blank
+api_url = https://my-cool-saas-app.orbisius.com
+
+author_url = https://orbisius.com
+author_product_1_url = https://qsandbox.com
+author_product_2_url = https://wpsandbox.net
+author_product_3_url = https://wpdemo.net
+author_product_3_url = https://go359.com
+
 ```
 
 Customizations / Support
