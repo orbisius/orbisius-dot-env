@@ -32,14 +32,13 @@ VAR1="value" # comment
 VAR2=value # comment
 ```
 
+Customizations / Support
+--------------
+We do offer paid support & customizations.
+Contact us at https://orbisius.com/contact for more info.
+
 
 License
 -------
 
 MIT
-
-
-Customizations / Support
---------------
-We do offer paid support & customizations.
-Contact us at https://orbisius.com/contact for more info.
