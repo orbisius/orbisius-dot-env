@@ -8,6 +8,7 @@ The class is very efficient and doesn't currently use regular expressions at all
 When it parses the key names are automatically uppercases them.
 It can define the values in environment, $_ENV, $_SERVER etc. and also define php constants if they haven't been defined just yet.
 
+This class was created by https://orbisius.com
 
 Usage Notes
 -----------
