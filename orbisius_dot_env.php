@@ -133,6 +133,14 @@ class Orbisius_Dot_Env {
 
 			$val = substr($line, $eq_pos + 1);
 			$val = str_replace('=', '', $val); // jic
+
+			$pos = strpos($val, '#'); // does the value have a comment ?
+
+			// rm comment from value field if not prefixed by a slash \
+			if (($pos !== false) && substr($val, $pos - 1, 1) != "\\" ) {
+				$val = substr($val, 0, $pos);
+			}
+
 			$val = trim($val, '\'" ');
 
 			$data[$key] = $val;
@@ -141,3 +149,4 @@ class Orbisius_Dot_Env {
 		return $data;
 	}
 }
+
