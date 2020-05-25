@@ -20,6 +20,11 @@ $data = $dot_env-&gt;read();
 $dot_env-&gt;updateEnv($data);
 $dot_env-&gt;defineConsts($data);
 </code></pre>
+<br/>
+... or<br/>
+<pre><code class="php language-php">$dot_env = Orbisius_Dot_Env::getInstance();
+$dot_env-&gt;run();
+</code></pre>
 
 <h3 id="envexample">.env Example</h3>
 
