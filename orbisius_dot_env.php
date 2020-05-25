@@ -9,6 +9,11 @@
  */
 class Orbisius_Dot_Env {
 	/**
+	 * @var array
+	 */
+	private $params = [];
+
+	/**
 	 * Singleton
 	 * @staticvar static $instance
 	 * @return static
@@ -23,6 +28,10 @@ class Orbisius_Dot_Env {
 		return $instance;
 	}
 
+	public function init($params = []) {
+		$this->params = $params;
+	}
+
 	/**
 	 * Updates env, $_ENV, $_SERVER with the passed data. If value is non a scalar it will be json encoded.
 	 * @param array $data
@@ -33,7 +42,17 @@ class Orbisius_Dot_Env {
 			return false;
 		}
 
+		$prefix = '';
+
+		if (!empty($this->params['prefix'])) {
+			$prefix = $this->formatPrefix($this->params['prefix']);
+		}
+
 		foreach ($data as $k => $v) {
+			if (!$this->hasPrefix($prefix, $k)) {
+				$k = $prefix . $k;
+			}
+
 			$v = is_scalar($v) ? $v : json_encode($v);
 
 			if ($override) {
@@ -59,6 +78,68 @@ class Orbisius_Dot_Env {
 	}
 
 	/**
+	 * @param string $key
+	 * @return string
+	 */
+	public function get($key, $prefix = '') {
+		if (empty($prefix) && !empty($this->params['prefix'])) {
+			$prefix = $this->params['prefix'];
+		}
+
+		$prefix = $this->formatPrefix($prefix);
+		$key = $prefix . $key;
+		$var_name = strtoupper($key);
+
+		if (defined($var_name)) {
+			return constant($var_name);
+		}
+
+		if (!empty($_ENV[$var_name])) {
+			return $_ENV[$var_name];
+		}
+
+		if (!empty($_SERVER[$var_name])) {
+			return $_SERVER[$var_name];
+		}
+
+		$val = getenv($var_name);
+
+		if (!empty($val)) {
+			return $val;
+		}
+	}
+
+	/**
+	 * @param string $prefix
+	 * @return bool
+	 */
+	public function hasPrefix($prefix, $str) {
+		return !empty( $prefix) && strcasecmp($prefix, substr( $str, 0, strlen($prefix) ) ) == 0;
+	}
+
+	/**
+	 * Defines php consts based on the names. If prefix is passed it will be PREPENDED to each const
+	 * @param string $prefix
+	 */
+	public function formatPrefix($prefix = '') {
+		$prefix = empty($prefix) ? '' : trim($prefix);
+
+		if (empty($prefix)) {
+			return '';
+		}
+
+		if (!empty($prefix) && substr($prefix, -1, 1) != '_') { // Let's append underscore automatically if not passed.
+			$prefix .= '_';
+		}
+
+		$prefix = preg_replace('#[^\w]#si', '_', $prefix);
+		$prefix = preg_replace('#\_+#si', '_', $prefix);
+		$prefix = strtoupper($prefix);
+
+		return $prefix;
+	}
+
+	/**
 	 * Defines php consts based on the names. If prefix is passed it will be PREPENDED to each const
 	 * @param array $data
 	 * @param string $prefix
@@ -68,19 +149,23 @@ class Orbisius_Dot_Env {
 			return false;
 		}
 
-		$prefix = empty($prefix) ? '' : trim($prefix);
-
-		if (!empty($prefix) && substr($prefix, -1, 1) != '_') { // Let's append underscore automatically if not passed.
-			$prefix .= '_';
+		if (empty($prefix) && !empty($this->params['prefix'])) {
+			$prefix = $this->params['prefix'];
 		}
 
+		$prefix = $this->formatPrefix($prefix);
+
 		foreach ($data as $k => $v) {
-			if (defined($prefix . $k)) {
+			if (!$this->hasPrefix($prefix, $k)) {
+				$k = $prefix . $k;
+			}
+
+			if (defined($k)) {
 				continue;
 			}
 
 			$v = is_scalar($v) ? $v : json_encode($v);
-			define($prefix . $k, $v);
+			define($k, $v);
 		}
 
 		return true;
@@ -148,5 +233,23 @@ class Orbisius_Dot_Env {
 
 		return $data;
 	}
-}
 
+	/**
+	 * Loads, updates env and defines php consts
+	 * @param array $inp_data
+	 * @return bool
+	 */
+	public function run($inp_data = []) {
+		$data = $this->read();
+		$data = array_replace_recursive($inp_data, $data);
+
+		if (empty($data)) {
+			return false;
+		}
+
+		$this->updateEnv( $data );
+		$this->defineConsts( $data );
+
+		return true;
+	}
+}
