@@ -107,6 +107,8 @@ class Orbisius_Dot_Env {
 		if (!empty($val)) {
 			return $val;
 		}
+
+		return '';
 	}
 
 	/**
