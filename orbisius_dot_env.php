@@ -12,6 +12,7 @@ class Orbisius_Dot_Env {
 	 * @var array
 	 */
 	private $params = [];
+	private $processed = [];
 
 	/**
 	 * Singleton
@@ -55,6 +56,8 @@ class Orbisius_Dot_Env {
 
 			$v = is_scalar($v) ? $v : json_encode($v);
 
+			$this->processed[$k] = $v;
+
 			if ($override) {
 				putenv("$k=" . $v);
 				$_ENV[$k] = $v;
@@ -78,34 +81,38 @@ class Orbisius_Dot_Env {
 	}
 
 	/**
-	 * @param string $key
+	 * @param string $inp_key
 	 * @return string
 	 */
-	public function get($key, $prefix = '') {
+	public function get($inp_key, $prefix = '') {
 		if (empty($prefix) && !empty($this->params['prefix'])) {
 			$prefix = $this->params['prefix'];
 		}
 
-		$prefix = $this->formatPrefix($prefix);
-		$key = $prefix . $key;
-		$var_name = strtoupper($key);
+		$key = $this->formatPrefix($inp_key);
+		$var_name = $this->formatPrefix($prefix . $key);
+		$key_no_pref = str_replace($prefix, '', $key);
 
-		if (defined($var_name)) {
-			return constant($var_name);
-		}
+		foreach ([ $key, $var_name, $key_no_pref, ] as $v) {
+			$v = trim($v, '_-'); // sometimes keys have leading/trailing chars
 
-		if (!empty($_ENV[$var_name])) {
-			return $_ENV[$var_name];
-		}
+			if ( defined( $v ) ) {
+				return constant( $v );
+			}
 
-		if (!empty($_SERVER[$var_name])) {
-			return $_SERVER[$var_name];
-		}
+			if ( ! empty( $_ENV[ $v ] ) ) {
+				return $_ENV[ $v ];
+			}
 
-		$val = getenv($var_name);
+			if ( ! empty( $_SERVER[ $v ] ) ) {
+				return $_SERVER[ $v ];
+			}
 
-		if (!empty($val)) {
-			return $val;
+			$val = getenv( $v );
+
+			if ( ! empty( $val ) ) {
+				return $val;
+			}
 		}
 
 		return '';
@@ -168,6 +175,7 @@ class Orbisius_Dot_Env {
 
 			$v = is_scalar($v) ? $v : json_encode($v);
 			define($k, $v);
+            $this->processed[$k] = $v;
 		}
 
 		return true;
@@ -184,27 +192,49 @@ class Orbisius_Dot_Env {
 		$data = [];
 
 		if (empty($file)) {
-			if ( ! empty( $_SERVER['DOCUMENT_ROOT'] ) ) {
-				$file = dirname( $_SERVER['DOCUMENT_ROOT'] ) . '/.env';
-			} elseif ( defined('ABSPATH') ) { // WordPress set up.
-				$file = dirname( ABSPATH ) . '/.env';
-			} else {
-				$file = __DIR__ . '/.env';
-			}
-		}
+		    $found = 0;
+		    $files = [];
 
-		if (! @file_exists($file)) { // could produce warnings if outside of open base dir
+		    // We're checking 1 devel above doc root
+            if ( ! empty( $_SERVER['DOCUMENT_ROOT'] ) ) {
+                $files[] = dirname( $_SERVER['DOCUMENT_ROOT'] ) . '/.env';
+            }
+
+            if ( defined('ABSPATH') ) { // WordPress set up.
+                $files[] = dirname(ABSPATH) . '/.env';
+                $files[] = ABSPATH . '/.env';
+            }
+
+            if ( ! empty( $_SERVER['DOCUMENT_ROOT'] ) ) {
+                $files[] = $_SERVER['DOCUMENT_ROOT'] . '/.env';
+            }
+
+            $files[] = __DIR__ . '/.env';
+
+			foreach ($files as $checked_file) {
+			    if (file_exists($checked_file)) {
+			        $file = $checked_file;
+			        $found = 1;
+			        break;
+                }
+            }
+        }
+
+		if ( empty($file) || empty($found) || ! @file_exists($file) ) { // could produce warnings if outside of open base dir
 			return $data;
 		}
 
 		$buff = file_get_contents($file, LOCK_SH);
 		$lines = explode("\n", $buff);
+		$lines = array_map('trim', $lines);
+		$lines = array_unique($lines); // no dups
 		$lines = array_filter($lines); // rm empty lines
 
 		foreach ($lines as $line) {
-			$line = trim($line);
+			$first_char = substr($line, 0, 1);
 
-			if (empty($line) || substr($line, 0, 1) == '#') {
+			// empty or single line comments
+			if (empty($line) || $first_char == '#' || $first_char == ';' || ($first_char == '/' && substr($line, 1, 1) == '/')) {
 				continue;
 			}
 
