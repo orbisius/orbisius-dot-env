@@ -19,6 +19,13 @@ $dot_env = Orbisius_Dot_Env::getInstance();
 $data = $dot_env->read();
 $dot_env->updateEnv($data);
 $dot_env->defineConsts($data);
+
+// Get an ENV variable.
+$dot_env->get('ENV');
+
+// Checks for several ENV variables until it finds a value.
+$dot_env->get('ENV, APP_ENV');
+
 ```
 ... or
 

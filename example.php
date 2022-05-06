@@ -22,3 +22,11 @@ $dot_env->defineConsts($data);
 // OR define the consts with this prefix
 // 
 // $dot_env->defineConsts($data, 'MY_APP_');
+
+// Get an ENV variable.
+$dot_env->get('ENV');
+
+// Checks for several ENV variables until it finds a value.
+$dot_env->get('ENV, APP_ENV');
+
+
